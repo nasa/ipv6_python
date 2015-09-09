@@ -2,7 +2,7 @@ Advanced IPv6 Socket Manipulation for Python
 
 Description:
 
-This rather simplistic extension module is intended to allow more advanced
+This rather simplistic extension module is intended to allow for more advanced
 manipulation of IPv6 sockets in Python.  In particular, Python did not have an
 easy means to interact with the flow label of a particular IPv6 socket.  This
 extension currently allows for flow labels to be enabled on a socket and a
@@ -19,7 +19,7 @@ Usage:
 
   import ipv6
 
-You can then pass an ipv6 socket to the function get_flow_label() to
+You can then pass an IPv6 socket to the function get_flow_label() to
 apply a random flow label assigned by the kernel.  The first parameter
 is the socket object or the integer file descriptor.  The remaining
 parameters are optional depending on the state of your socket.  Here is
@@ -29,9 +29,26 @@ an example:
 
 See https://docs.python.org/2/library/socket.html for info on sockaddr
 
-The get_flow_label call returns a new sockaddr structure with the
-flowinfo set the appropriate value.  You can then send data as normal.
+The get_flow_label call returns a new sockaddr structure with the flowinfo
+field set to newly created flow label assigned by the kernel.  You can then
+send data as normal.
 
 License:
 
 This code is released under the NASA Open Source Agreement version 1.3
+
+Simple Example:
+
+# Send a single UDP packet
+import socket
+import ipv6
+host = "::1"
+port = 3300
+data = "NASA"
+resolve = socket.getaddrinfo(host, port, socket.AF_INET6, socket.SOCK_DGRAM)
+(family, socktype, proto, _, sockaddr) = resolve[0]
+sock = socket.socket(family, socktype, proto)
+sockaddr = ipv6.get_flow_label(sock,*sockaddr)
+print "Flow Label:",hex(sockaddr[2])
+sock.sendto(data,sockaddr)
+
