@@ -75,7 +75,7 @@ def process_msg(msg, tnow, print_data=False):
     if ((msg_len - p) < 5):
       return msg[p:]
     (msg_seq, msg_tclass, msg_mf) = struct.unpack("!HBH",msg[p:p+5])
-    msg_size = msg_mf & 0x3fff
+    msg_size = msg_mf & 0x7fff
     if (msg_seq == 0):
       # Cannot have a zero seq# something went wrong, dump the msg
       print "{0:f} !SEQ {2} Rx {1}".format(tnow,msg.encode("hex"),msg_len)
