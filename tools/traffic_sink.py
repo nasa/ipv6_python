@@ -147,7 +147,7 @@ if __name__ == '__main__':
   if (options.size < 1280):
     parser.error("Capture size must be at least {} bytes.".format(prefix_len))
   if (options.size > _MAX_MTU):
-    parser.error("Payload sizes exceeding %d bytes are not currently supported".format(_MAX_MTU))
+    parser.error("Payload sizes exceeding {} bytes are not currently supported".format(_MAX_MTU))
 
   # Show all set options for Debugging output
   if (options.debug):
