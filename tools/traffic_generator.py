@@ -40,7 +40,7 @@ if __name__ == '__main__':
   # Administrative Stuff
   signal.signal(signal.SIGINT, sigint_handler)
   # Settings
-  _MAX_MTU = 9200
+  _MAX_MTU = 0x7fff
   # Globals that will require "cleanup"
   sock = None
   # Parse Arguments

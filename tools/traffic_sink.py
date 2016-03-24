@@ -105,6 +105,8 @@ def process_msg(msg, tnow, print_data=False):
 if __name__ == '__main__':
   # Administrative Stuff
   signal.signal(signal.SIGINT, sigint_handler)
+  # Settings
+  _MAX_MTU = 0x7fff
   # Globals that will require "cleanup"
   open_socks = []
   # Parse Arguments
@@ -144,8 +146,8 @@ if __name__ == '__main__':
   # Additional Options Checking
   if (options.size < 1280):
     parser.error("Capture size must be at least {} bytes.".format(prefix_len))
-  if (options.size > 9200):
-    parser.error("Payload sizes exceeding 9200 bytes are not currently supported")
+  if (options.size > _MAX_MTU):
+    parser.error("Payload sizes exceeding %d bytes are not currently supported".format(_MAX_MTU))
 
   # Show all set options for Debugging output
   if (options.debug):
