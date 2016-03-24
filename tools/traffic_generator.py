@@ -209,6 +209,11 @@ if __name__ == '__main__':
   if (options.debug):
     print "Set Options:", options
   
+  if (options.hz < 1):
+    # So as the features of the program expanded it introduced an issue when options.hz is less than 1
+    # Since we don't really output this variable to the user, we are adjusting as a quick fix
+    # This should allow something like "-i 5" or "-f 0.2" to be used on the command line without also setting the period
+    options.hz = 1
   # Set the Payload
   pattern_len = len(options.pattern)
   payload_len = (options.size - prefix_len)
