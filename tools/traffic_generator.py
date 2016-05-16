@@ -214,6 +214,7 @@ if __name__ == '__main__':
     # Since we don't really output this variable to the user, we are adjusting as a quick fix
     # This should allow something like "-i 5" or "-f 0.2" to be used on the command line without also setting the period
     options.hz = 1
+  hz_int = int(options.hz)
   # Set the Payload
   pattern_len = len(options.pattern)
   payload_len = (options.size - prefix_len)
@@ -225,7 +226,7 @@ if __name__ == '__main__':
     payload.extend(options.pattern[0:(payload_len%pattern_len)])
   else:
     payload.extend("\x00"*payload_len)
-  for s in xrange(1,int(options.hz)+1):
+  for s in xrange(1,hz_int+1):
     payload_ref[s]=payload
   if (options.debug):
     print "PAYLOAD SIZES"
@@ -346,7 +347,7 @@ if __name__ == '__main__':
   while True:
     tnow = time()
     tx_count += 1
-    cycle_count = (((tx_count-1)%options.hz)+1)
+    cycle_count = (((tx_count-1)%hz_int)+1)
     sequence_number = (((tx_count-1)%0xffff)+1)
     # Check for discrepancy against previous tnext and set a new tnext
     # tfudge will be positive if we slept too long, negative if we woke up too early
