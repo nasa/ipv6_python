@@ -325,6 +325,8 @@ if __name__ == '__main__':
         logging.critical('Setting the flowlabel explicitly is currently unsupported.  Sorry!  Use "0" to have the kernel assign a value.')
         cleanup()
         sys.exit(1)
+  else:
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, options.tclass)
   
   # Precalculate the fixed part of the Header
   prefix_flags = 0
