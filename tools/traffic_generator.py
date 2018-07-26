@@ -48,6 +48,7 @@ if __name__ == '__main__':
   parser_protocol = parser.add_mutually_exclusive_group()
   parser_rate = parser.add_mutually_exclusive_group()
   parser_limit = parser.add_mutually_exclusive_group()
+  parser_priority = parser.add_mutually_exclusive_group()
   parser.add_argument('-V', '--version', action='version', version='%(prog)s version 1.00, Joseph Ishac (jishac@nasa.gov)')
   parser.add_argument("-D", "--debug", action="store_true", dest="debug", default=False, help="Extra debugging information")
   parser.add_argument("-v", "--verbose", action="count", dest="verbose", default=1, help="Increase verboseness of messages")
@@ -89,10 +90,14 @@ if __name__ == '__main__':
                     action="store", type=float, dest="period", default=None,
                     help="The basis of time for transmissions in seconds. \
                     Thus, an interval of 2 and period of 6 would equate to 3 transmissions over 6 seconds. Default: 1.0 sec", metavar="SEC")
-  parser.add_argument("-Q", "--qos",
+  parser_priority.add_argument("-Q", "--qos",
                     action="store", type=any_int, dest="tclass", default=None,
                     help="Set the DiffServe Experimental Code Point in the packets. Thus, values from 0-15 will become (0x0c to 0xfc) (to comply with ECN). \
                     You can specify non-experimental points by entering values larger than 0xf. TOS can be a decimal or hex number (hex prefixed with 0x).", metavar="TOS")
+  parser_priority.add_argument("--dscp",
+                    action="store", type=str, dest="dscp", default=None,
+                    help="Explicitly set the DiffServe Code Point. \
+                    You can specify common names (ie: CS1), binary, or hex values (hex prefixed with 0x).", metavar="DSCP")
   parser.add_argument("-s", "--size",
                     action="store", type=int, dest="size", default=56,
                     help="Specifies the number of data bytes to be sent per packet. Default: %(default)s", metavar="BYTES")
@@ -180,6 +185,26 @@ if __name__ == '__main__':
         parser.error("Skip values must be positive and non-zero")
       if (s > options.hz):
         parser.error("Skip value of {} is outside the number of transmissions in one period: {}".format(s,options.hz))
+  # DiffServe Support
+  # Table of common values
+  _dscp_table = {}
+  for dscp in range(8):
+    _dscp_table["CS{}".format(dscp)]=(dscp<<3)
+  for dscp in range(1,4):
+    for dscpv in range(1,5):
+      _dscp_table["AF{}{}".format(dscpv,dscp)]=(dscpv<<3)+(dscp<<1)
+  _dscp_table["EF"]=46
+  _dscp_table["BE"]=0
+  if (options.dscp is not None):
+    if options.dscp in _dscp_table:
+      options.tclass = _dscp_table[options.dscp]
+    else:
+      try: options.tclass = any_int(options.dscp)
+      except ArgumentTypeError:
+        logging.error("Invalid DSCP code Point: {}".format(options.dscp))
+        options.tclass = None
+    if options.tclass is not None:
+      options.tclass <<= 2
   if (options.tclass is None):
     options.tclass = 0x00
   elif ((options.tclass < 0) or (options.tclass > 255)):
