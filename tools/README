@@ -57,12 +57,15 @@ optional arguments:
   -P SEC, --period SEC  The basis of time for transmissions in seconds. Thus,
                         an interval of 2 and period of 6 would equate to 3
                         transmissions over 6 seconds. Default: 1.0 sec
-  -Q TOS, --qos TOS     Set the DiffServe Experimental Code Point in the
-                        packets. Thus, values from 0-15 will become (0x0c to
-                        0xfc) (to comply with ECN). You can specify non-
-                        experimental points by entering values larger than
-                        0xf. TOS can be a decimal or hex number (hex prefixed
-                        with 0x).
+  -Q TOS, --qos TOS, --dscp TOS
+                        Set the DiffServ *Experimental* Code Point in the
+                        packets. Thus, values from 0-15 will produce a traffic
+                        class field of 0x0c to 0xfc (to comply with ECN).
+                        Alternatively, specify an explicit traffic class field
+                        (including ECN bits) by entering values larger than
+                        0xf. Common code point names (ie: CS1, AF11) can also
+                        be used. TOS can be entered in decimal or hex (hex
+                        prefixed with 0x).
   -s BYTES, --size BYTES
                         Specifies the number of data bytes to be sent per
                         packet. Default: 56
@@ -123,3 +126,7 @@ Generate 8 packets at a rate of 4 packets per second, alternating between 100 an
 python traffic_generator.py -c 3 -T -Q 7 -F 0 ::1 2222
 
 Generate 3 packets with timestamps and the traffic class set to 0x7c and flow labels enabled.
+
+python traffic_generator.py -4 -u -T -Q CS5 localhost 2222
+
+Generate continuous 56 byte UDP packets with timestamps and with DiffServ code point set to CS5
