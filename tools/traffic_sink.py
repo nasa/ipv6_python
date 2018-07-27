@@ -47,9 +47,6 @@ def establish_server(host, port, stype, sfamily=socket.AF_INET6):
         if (family == socket.AF_INET6):
           # Setup to get TCLASS Info (IPv6 ONLY)
           sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_RECVTCLASS, 1)
-        # IPv4 Setup TOS, not supported in Python 2.7?
-        #else:
-        #  sock.setsockopt(socket.IPPROTO_IP, socket.IP_RECVTOS, 1)
       except socket.error, msg:
         sock = None
         logging.error('Socket Creation Error: {}'.format(msg))
