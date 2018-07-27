@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2016
+# Copyright (c) 2016-2018
 # United States Government as represented by Joseph Ishac <jishac@nasa.gov>
 # No copyright is claimed in the United States under Title 17, U.S.Code. All Other Rights Reserved.
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
   parser_protocol = parser.add_mutually_exclusive_group()
   parser_rate = parser.add_mutually_exclusive_group()
   parser_limit = parser.add_mutually_exclusive_group()
-  parser.add_argument('-V', '--version', action='version', version='%(prog)s version 1.00, Joseph Ishac (jishac@nasa.gov)')
+  parser.add_argument('-V', '--version', action='version', version='%(prog)s version 1.10, Joseph Ishac (jishac@nasa.gov)')
   parser.add_argument("-D", "--debug", action="store_true", dest="debug", default=False, help="Extra debugging information")
   parser.add_argument("-v", "--verbose", action="count", dest="verbose", default=1, help="Increase verboseness of messages")
   parser.add_argument("-q", "--quiet", action="store_const", dest="verbose", const=0, help="Disable any extra dialog")
