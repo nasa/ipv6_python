@@ -91,7 +91,7 @@ if __name__ == '__main__':
                     Thus, an interval of 2 and period of 6 would equate to 3 transmissions over 6 seconds. Default: 1.0 sec", metavar="SEC")
   parser.add_argument("-Q", "--qos", "--dscp",
                     action="store", type=str, dest="tclass", default=None,
-                    help="Set the DiffServe *Experimental* Code Point in the packets.\
+                    help="Set the DiffServ *Experimental* Code Point in the packets.\
                     Thus, values from 0-15 will produce a traffic class field of 0x0c to 0xfc (to comply with ECN). \
                     Alternatively, specify an explicit traffic class field (including ECN bits) by entering values larger than 0xf.\
                     Common code point names (ie: CS1, AF11) can also be used.\
@@ -183,8 +183,8 @@ if __name__ == '__main__':
         parser.error("Skip values must be positive and non-zero")
       if (s > options.hz):
         parser.error("Skip value of {} is outside the number of transmissions in one period: {}".format(s,options.hz))
-  # DiffServe Support
-  # Table of common values
+  # DiffServ Support
+  # Table of common names to values
   _dscp_table = {}
   for dscp in range(8):
     _dscp_table["CS{}".format(dscp)]=(dscp<<3)
@@ -196,6 +196,7 @@ if __name__ == '__main__':
   if (options.tclass is not None):
     if options.tclass in _dscp_table:
       options.tclass = _dscp_table[options.tclass]
+      # Shift for ECN bits
       options.tclass <<= 2
     else:
       try:
