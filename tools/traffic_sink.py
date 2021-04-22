@@ -7,6 +7,7 @@
 # This program will listen for IPv6 UDP and TCP traffic on a specified port and
 # log reception time and the IPv6 Traffic Class.
 
+from __future__ import print_function
 
 import sys, signal, socket, select
 import struct
@@ -17,7 +18,7 @@ from argparse import ArgumentParser, ArgumentTypeError, SUPPRESS
 
 def sigint_handler(signal, stackframe):
   # Handler for Ctrl-C (SIGINT)
-  print ""
+  print("")
   logging.debug('Caught Interrupt, Exiting!')
   cleanup()
   sys.exit(0)
@@ -47,7 +48,7 @@ def establish_server(host, port, stype, sfamily=socket.AF_INET6):
         if (family == socket.AF_INET6):
           # Setup to get TCLASS Info (IPv6 ONLY)
           sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_RECVTCLASS, 1)
-      except socket.error, msg:
+      except socket.error as msg:
         sock = None
         logging.error('Socket Creation Error: {}'.format(msg))
         continue
@@ -55,13 +56,13 @@ def establish_server(host, port, stype, sfamily=socket.AF_INET6):
         sock.bind((host, port))
         if (socktype == socket.SOCK_STREAM):
           sock.listen(5)
-      except socket.error, msg:
+      except socket.error as msg:
         logging.critical('Socket Binding Error: {}'.format(msg))
         sock.close()
         sock = None
         continue
       break
-  except socket.error, msg:
+  except socket.error as msg:
     logging.error('Name or address resolution failed: {}'.format(msg))
   if sock is None:
     logging.critical('Fatal Error: Could not open a socket for {} on port {}'.format(options.host, options.port))
@@ -78,28 +79,28 @@ def process_msg(msg, tnow, print_data=False):
     msg_size = msg_mf & 0x7fff
     if (msg_seq == 0):
       # Cannot have a zero seq# something went wrong, dump the msg
-      print "{0:f} !SEQ {2} Rx {1}".format(tnow,msg.encode("hex"),msg_len)
+      print("{0:f} !SEQ {2} Rx {1}".format(tnow,msg.encode("hex"),msg_len))
       return None
     if (msg_size == 0):
       # Cannot have a zero size something went wrong, dump the msg
-      print "{0:f} !LEN {2} Rx {1}".format(tnow,msg.encode("hex"),msg_len)
+      print("{0:f} !LEN {2} Rx {1}".format(tnow,msg.encode("hex"),msg_len))
       return None
     if ((msg_len - p) < msg_size):
       return msg[p:]
-    print "{0:f} {3} {2} Rx {1}".format(tnow,msg_seq,msg_size,hex(msg_tclass)),
+    print("{0:f} {3} {2} Rx {1}".format(tnow,msg_seq,msg_size,hex(msg_tclass)),end='')
     p += 5
     msg_size -= 5
     if (msg_mf & 0x8000):
       (msg_ts,) = struct.unpack("!d",msg[p:p+8])
       p += 8
       msg_size -= 8
-      print " {:f} {:f}".format(msg_ts,(tnow-msg_ts)),
+      print(" {:f} {:f}".format(msg_ts,(tnow-msg_ts)),end='')
     msg_data = msg[p:p+msg_size]
     p += msg_size
     if (print_data):
-      print " {}".format(msg_data.encode("hex"))
+      print(" {}".format(msg_data.encode("hex")))
     else:
-      print ""
+      print("")
   return None
 
 if __name__ == '__main__':
@@ -151,7 +152,7 @@ if __name__ == '__main__':
 
   # Show all set options for Debugging output
   if (options.debug):
-    print "Set Options:", options
+    print("Set Options: {}".format(options))
   
   if ((options.host is None) or (options.port is None)):
     # This shouldn't be possible with argparse
@@ -183,14 +184,14 @@ if __name__ == '__main__':
           open_socks.append(new_sock)
           tcp_buffers[new_sock] = None
           logging.info("Accepted Connection from {}:{}".format(*new_dst))
-        except socket.error, err:
+        except socket.error as err:
           logging.error("Unexpected Socket Error: {}".format(err))
       elif sock is usock:
         # Got a UDP message
         try:
           msg = sock.recv(options.size)
           tnow = time()
-        except socket.error, err:
+        except socket.error as err:
           logging.error("Unable to read from UDP: {}".format(err))
           continue
         msg_part = process_msg(msg,tnow,options.payload)
@@ -202,7 +203,7 @@ if __name__ == '__main__':
         try:
           msg = sock.recv(options.size)
           tnow = time()
-        except socket.error, err:
+        except socket.error as err:
           logging.error("Remote client terminated unexpectedly: {}".format(err))
           msg = ''
         if (msg == ''):

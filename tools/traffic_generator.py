@@ -17,7 +17,7 @@ from argparse import ArgumentParser, ArgumentTypeError, SUPPRESS
 
 def sigint_handler(signal, stackframe):
   # Handler for Ctrl-C (SIGINT)
-  print ""
+  print("")
   logging.debug('Caught Interrupt, Exiting!')
   cleanup()
   sys.exit(2)
@@ -34,7 +34,12 @@ def any_int(string):
   return value
 
 def any_str(string):
-  return string.decode('string-escape') 
+  try:
+    # Python 2.x
+    return string.decode('string-escape')
+  except AttributeError:
+    # Python 3
+    return(bytes(string.encode('utf-8').decode('unicode_escape'),'utf-8'))
 
 if __name__ == '__main__':
   # Administrative Stuff
@@ -159,7 +164,7 @@ if __name__ == '__main__':
   if (options.flowlabel is not None):
     try:
       import ipv6
-    except ImportError, e:
+    except ImportError as e:
       logging.critical("Flow Label Extensions not found!! Check your paths!")
       options.flowlabel=None
   
@@ -172,7 +177,7 @@ if __name__ == '__main__':
     options.skip = []
     if (options.hz <= 1):
       parser.error("Insufficient number of transmissions in one period!  Cannot limit transmissions!")
-    for s in xrange(1,int(options.hz)+1):
+    for s in range(1,int(options.hz)+1):
       if (s not in options.only):
         options.skip.append(s)
   if (options.skip is not None):
@@ -232,7 +237,7 @@ if __name__ == '__main__':
 
   # Show all set options for Debugging output
   if (options.debug):
-    print "Set Options:", options
+    print("Set Options: {}".format(options))
   
   if (options.hz < 1):
     # So as the features of the program expanded it introduced an issue when options.hz is less than 1
@@ -247,31 +252,32 @@ if __name__ == '__main__':
   payload_ref={}
   payload = bytearray()
   if (pattern_len > 0):
-    payload.extend(options.pattern*(payload_len/pattern_len))
+    payload.extend(options.pattern*(payload_len//pattern_len))
     payload.extend(options.pattern[0:(payload_len%pattern_len)])
   else:
-    payload.extend("\x00"*payload_len)
-  for s in xrange(1,hz_int+1):
+    payload.extend(b"\x00"*payload_len)
+  for s in range(1,hz_int+1):
     payload_ref[s]=payload
   if (options.debug):
-    print "PAYLOAD SIZES"
-    print "DEFAULT: Prefix:", prefix_len, "bytes; Payload:", payload_len, "bytes; Total Payload:", (prefix_len+payload_len)
+    print("PAYLOAD SIZES")
+    print("DEFAULT: Prefix: {} bytes; Payload: {} bytes; Total Payload: {}".format(
+        prefix_len, payload_len, (prefix_len+payload_len) ))
   # Adjust if needed
   if (options.adjust is not None):
     for adj in options.adjust:
       payload_len = (adj[0] - prefix_len)
       payload = bytearray()
       if (pattern_len > 0):
-        payload.extend(options.pattern*(payload_len/pattern_len))
+        payload.extend(options.pattern*(payload_len//pattern_len))
         payload.extend(options.pattern[0:(payload_len%pattern_len)])
       else:
         payload.extend("\x00"*payload_len)
       for s in adj[1:]:
         payload_ref[s]=payload
   if (options.debug):
-    print "ALL: Tx#, Size, Payload"
+    print("ALL: Tx#, Size, Payload")
     for k in payload_ref:
-      print "{}, {}, {}".format(k,len(payload_ref[k]),repr(payload_ref[k]))
+      print("{}, {}, {}".format(k,len(payload_ref[k]),repr(payload_ref[k])))
 
   if ((options.host is None) or (options.port is None)):
     # This shouldn't be possible with argparse
@@ -294,7 +300,7 @@ if __name__ == '__main__':
       logging.info('Attempting to transmit to {} port {}'.format(*sockaddr))
       try:
         sock = socket.socket(family, socktype, proto)
-      except socket.error, msg:
+      except socket.error as msg:
         sock = None
         logging.error('Socket Creation Error: {}'.format(msg))
         continue
@@ -303,7 +309,7 @@ if __name__ == '__main__':
         break
       try:
         sock.bind(('', 0))
-      except socket.error, msg:
+      except socket.error as msg:
         logging.critical('Socket Binding Error: {}'.format(msg))
         sock.close()
         sock = None
@@ -313,7 +319,7 @@ if __name__ == '__main__':
         try:
           sock.connect(sockaddr)
           tries = 0
-        except socket.error, msg:
+        except socket.error as msg:
           logging.warning('Cannot connect to remote host: {}'.format(msg))
           logging.warning('Retrying in 20 seconds')
           sleep(20)
@@ -324,7 +330,7 @@ if __name__ == '__main__':
             sock = None
             continue
       break
-  except socket.error, msg:
+  except socket.error as msg:
     logging.error('Name or address resolution failed: {}'.format(msg))
   if sock is None:
     logging.critical('Fatal Error: Could not open a socket for {} on port {}'.format(options.host, options.port))
@@ -381,7 +387,7 @@ if __name__ == '__main__':
     tfudge = tnow-tnext
     tnext = round(tnow+options.interval-tfudge,6)
     if (options.debug):
-      print "Time Wake: {:f}, Fudge: {:f}, Next Tx: {:f}".format(tnow, tfudge, tnext)
+      print("Time Wake: {:f}, Fudge: {:f}, Next Tx: {:f}".format(tnow, tfudge, tnext))
     tx_bytes = bytearray()
     # Pack the Sequence Number and Fixed Prefix
     tx_bytes.extend(struct.pack('!H',sequence_number))
@@ -399,18 +405,18 @@ if __name__ == '__main__':
     if (options.skip is not None) and (cycle_count in options.skip):
       skip_count += 1
       if (options.debug):
-        print "{:f}: Skip packet #{}".format(tnow, sequence_number)
+        print("{:f}: Skip packet #{}".format(tnow, sequence_number))
     else:
       try:
         sock.sendto(tx_bytes,sockaddr)
-      except socket.error, msg:
+      except socket.error as msg:
         logging.critical('Socket Transmission Error: {}'.format(msg))
         break
       if (options.debug):
-        print "{:f}: Sent packet #{}".format(tnow, sequence_number)
+        print("{:f}: Sent packet #{}".format(tnow, sequence_number))
       if (options.verbose != 0):
         # Normal Output, unless -q is used
-        print "{0:f} {3} {2} Tx {1}".format(tnow,sequence_number,len(tx_bytes),hex(options.tclass))
+        print("{0:f} {3} {2} Tx {1}".format(tnow,sequence_number,len(tx_bytes),hex(options.tclass)))
     # Check to see if we've reached our count
     if ((options.count is not None) and (tx_count >= options.count)):
       break
@@ -424,7 +430,7 @@ if __name__ == '__main__':
       continue
     # Sleep till our next transmission
     if (options.debug):
-      print "Time After Tx: {:f}, Sleeping for: {:f}".format(tnow, (tnext-tnow))
+      print("Time After Tx: {:f}, Sleeping for: {:f}".format(tnow, (tnext-tnow)))
     sleep(tnext - tnow)
 
   sock.close()
