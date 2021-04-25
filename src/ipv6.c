@@ -18,6 +18,12 @@
 #include <linux/in6.h>
 #include <arpa/inet.h>
 
+#if PY_MAJOR_VERSION >= 3
+  #define PyInt_AsLong PyLong_AsLong
+  #define PyInt_FromLong PyLong_FromLong
+  #define PyInt_Check PyLong_Check
+#endif
+
 /* static PyObject *err; */
 
 typedef struct {
@@ -31,7 +37,7 @@ static void
 IPV6_dealloc(IPV6* self)
 {
   // Free the object itself
-  self->ob_type->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 /* constructor */
@@ -255,89 +261,16 @@ static PyMethodDef IPV6_methods[] = {
     {NULL, NULL, 0, NULL}  /* Sentinel */
 };
 
-/* number object operators */
-static PyNumberMethods IPV6Operators = {
-    0,                                           /* nb_add */
-    0,                                           /* nb_subtract */
-    0,                                           /* nb_multiply */
-    0,                                           /* nb_divide */
-    0,                                           /* nb_remainder */
-    0,                                           /* nb_divmod */
-    0,                                           /* nb_power */
-    0,                                           /* nb_negative */
-    0,                                           /* nb_positive */
-    0,                                           /* nb_absolute */
-    0,                                           /* nb_nonzero / nb_bool */
-    0,                                           /* nb_invert */
-    0,                                           /* nb_lshift */
-    0,                                           /* nb_rshift */
-    0,                                           /* nb_and */
-    0,                                           /* nb_xor */
-    0,                                           /* nb_or */
-    0,                                           /* nb_coerce */
-    0,                                           /* nb_int */
-    0,                                           /* nb_long */
-    0,                                           /* nb_float */
-    0,                                           /* nb_oct */
-    0,                                           /* nb_hex */
-    0,                                           /* nb_inplace_add */
-    0,                                           /* nb_inplace_subtract */
-    0,                                           /* nb_inplace_multiply */
-    0,                                           /* nb_inplace_divide */
-    0,                                           /* nb_inplace_remainder */
-    0,                                           /* nb_inplace_power */
-    0,                                           /* nb_inplace_lshift */
-    0,                                           /* nb_inplace_rshift */
-    0,                                           /* nb_inplace_and */
-    0,                                           /* nb_inplace_xor */
-    0,                                           /* nb_inplace_or */
-    0,                                           /* nb_floor_divide */
-    0,                                           /* nb_true_divide */
-    0,                                           /* nb_inplace_floor_divide */
-    0,                                           /* nb_inplace_true_divide */
-    0,                                           /* nb_index */
-};
-
 static PyTypeObject IPV6Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "ipv6.IPV6",               /*tp_name*/
-    sizeof(IPV6),              /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)IPV6_dealloc,  /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    &IPV6Operators,            /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES,
-    "IPV6 Object",             /* tp_doc */
-    0,                         /* tp_traverse */
-    0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
-    0,                         /* tp_weaklistoffset */
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */
-    IPV6_methods,              /* tp_methods */
-    IPV6_members,              /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)IPV6_init,       /* tp_init */
-    0,                         /* tp_alloc */
-    (void *)IPV6_new,          /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ipv6.IPV6",
+    .tp_basicsize = sizeof(IPV6),
+    .tp_doc = "IPv6 Object",
+    .tp_new = (void *)IPV6_new,
+    .tp_dealloc = (destructor)IPV6_dealloc,
+    .tp_methods = IPV6_methods,
+    .tp_members = IPV6_members,
+    .tp_init = (initproc)IPV6_init,
 };
 
 static PyMethodDef module_methods[] = {
@@ -346,25 +279,37 @@ static PyMethodDef module_methods[] = {
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-#ifndef PyMODINIT_FUNC  /* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
+#if PY_MAJOR_VERSION >= 3
+  #define MOD_ERROR_VAL NULL
+  #define MOD_SUCCESS_VAL(val) val
+  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+    static struct PyModuleDef moduledef = { \
+      PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
+    ob = PyModule_Create(&moduledef);
+#else
+  #define MOD_ERROR_VAL
+  #define MOD_SUCCESS_VAL(val)
+  #define MOD_INIT(name) void init##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+    ob = Py_InitModule3(name, methods, doc);
 #endif
-PyMODINIT_FUNC
-initipv6(void) 
+  
+MOD_INIT(ipv6)
 {
     PyObject* m;
 
     if (PyType_Ready(&IPV6Type) < 0)
-        return;
+        return MOD_ERROR_VAL;
 
-    m = Py_InitModule3("ipv6", module_methods,
-                       "IPV6 Object base type.");
+    MOD_DEF(m, "ipv6", "IPV6 Object base type.", module_methods)
 
     if (m == NULL)
-        return;
+        return MOD_ERROR_VAL;
 
     Py_INCREF(&IPV6Type);
     PyModule_AddObject(m, "IPV6", 
         (PyObject *)&IPV6Type);
-}
 
+    return MOD_SUCCESS_VAL(m);
+}
