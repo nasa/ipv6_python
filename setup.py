@@ -3,7 +3,7 @@
 from distutils.core import setup, Extension
 
 setup(name='ipv6',
-      version='0.1',
+      version='1.23',
       description='Advanced IPv6 Socket Manipulation for Python',
       long_description='An extension module intended to allow more advanced manipulation of IPv6 sockets in Python (ie: flow labels). Requires a kernel with IPv6 flow label support.',
       author='Joseph Ishac',
