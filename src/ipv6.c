@@ -119,6 +119,11 @@ get_flow_label (IPV6 *self, PyObject *args)
     PyErr_SetString(PyExc_ValueError, "Malformed Request! Required: (Socket Object or Socket FD), Optional: (Host, Port, FlowInfo, Scope)");
     return NULL;
   }
+  if (socket == Py_None) {
+    PyErr_SetString(PyExc_ValueError, "None is not a valid socket");
+    return NULL;
+  }
+
   strncpy (v6dst, ptr, sizeof(v6dst) );
 
   if (PyInt_Check(socket))
