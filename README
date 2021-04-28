@@ -4,16 +4,22 @@ Description:
 
 This rather simplistic extension module is intended to allow for more advanced
 manipulation of IPv6 sockets in Python.  In particular, Python did not have an
-easy means to interact with the flow label of a particular IPv6 socket.  This
-extension currently allows for flow labels to be enabled on a socket and a
-random flow label can be requested from the kernel.  In the future, additional
-options may be added to facilitate additional flow label actions.
+easy means to interact with and obtain the flow label of a particular IPv6
+socket.  This extension currently allows for flow labels to be enabled on a
+socket and a random flow label can be requested from the kernel.  In the future,
+additional options may be added to facilitate additional flow label actions.
+
+A collection of tools are also included which can be used to generate test
+traffic under strict patterns, similar to how many telemetry systems operate.
+See the documentation under tools for more details.
 
 Installation:
 
 This package is installed using distutils.  The most common approach is to run:
 
   python setup.py install
+    or
+  python3 setup.py install
 
 Usage:
 

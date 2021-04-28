@@ -1,6 +1,6 @@
 /* Advanced IPv6 Socket Manipulation for Python
  *
- * Copyright © 2015 United States Government as represented by Joseph Ishac.
+ * Copyright © 2021 United States Government as represented by Joseph Ishac.
  * No copyright is claimed in the United States under Title 17, U.S.Code.
  * All Other Rights Reserved.
  *
