@@ -340,6 +340,10 @@ if __name__ == '__main__':
   else:
     logging.info('TCP: Connection Established.')
 
+  # Socket Options - Set TCP_NODELAY to disable Nagle
+  if (not options.udp):
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
   # IPv6 configs only
   if (not options.ipv4):
     # Setup to get TCLASS Info
