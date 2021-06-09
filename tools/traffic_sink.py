@@ -217,7 +217,7 @@ if __name__ == '__main__':
           continue
         if (tcp_buffers[sock] is not None):
           # Have some partial data, join with current
-          msg = "".join((tcp_buffers[sock],msg))
+          msg = b"".join((tcp_buffers[sock],msg))
           tcp_buffers[sock] = None
         msg_part = process_msg(msg,tnow,options.payload)
         if (msg_part is not None):
